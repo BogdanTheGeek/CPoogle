@@ -34,7 +34,11 @@ def authenticate_google_drive():
 # List folders directly under a specific parent folder
 def list_folders_one_level(drive_service, parent_folder_id):
     query = f"'{parent_folder_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-    results = drive_service.files().list(q=query, fields="files(id, name)", pageSize=1000).execute()
+    results = (
+        drive_service.files()
+        .list(q=query, fields="files(id, name)", pageSize=1000)
+        .execute()
+    )
     nextPageToken = results.get("nextPageToken")
     folders = results.get("files", [])
 
@@ -59,7 +63,9 @@ def list_files_in_folder(drive_service, folder_id):
     query = f"'{folder_id}' in parents and trashed = false"
     results = (
         drive_service.files()
-        .list(q=query, fields="files(id, name)")
+        .list(
+            q=query, fields="files(id, name, mimeType)", pageSize=1000
+        )  # NOTE: please don't reach this limit
         .execute()
     )
     files = results.get("files", [])
@@ -82,7 +88,7 @@ def scan_google_drive(parent_folder_id):
                 "files": files,
             }
         }
-        with open("files.json", "a") as f:
+        with open("out/files.json", "a") as f:
             entry = json.dumps(obj, separators=(",", ": "))
             f.write(entry)
             f.write("\n")

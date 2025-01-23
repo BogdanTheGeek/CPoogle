@@ -62,6 +62,7 @@ with open(args.input, "r") as file:
             model = {
                 "name": file["name"].strip(),
                 "id": file["id"],
+                "type": file["mimeType"],
                 "author": author,
             }
             models[file["id"]] = model

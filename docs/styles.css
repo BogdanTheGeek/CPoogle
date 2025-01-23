@@ -106,3 +106,6 @@ button:disabled {
   align-items: center;
   justify-content: center;
 }
+.counter {
+  color: #ccc;
+}

@@ -3,7 +3,11 @@ var models = undefined;
 
 function createLink(model) {
    link = document.createElement('a');
-   link.href = `https://drive.google.com/drive/folders/${model.id}`;
+   prefix = 'file/d';
+   if (model.type == undefined || model.type === 'application/vnd.google-apps.folder') {
+      prefix = 'drive/folders';
+   }
+   link.href = `https://drive.google.com/${prefix}/${model.id}`;
    link.textContent = model.name;
    link.target = '_blank';
    return link;
@@ -96,4 +100,18 @@ fetch('models.json')
             tbody.appendChild(createRow(tbody, el.item));
          });
       });
+   });
+
+endpoint = 'https://api.counterapi.dev/v1/bogdanthegeek/cpoogle'
+if (window.location.hostname !== 'localhost') {
+   endpoint += '/up';
+}
+
+fetch(endpoint)
+   .then(response => response.json())
+   .then(data => {
+      document.getElementById('counter').innerHTML = `Visits: ${data.count}`;
+   })
+   .catch(err => {
+      console.error(err);
    });
