@@ -1,0 +1,108 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+#search-input {
+  width: 50%;
+  height: 30px;
+  padding: 10px;
+  font-size: 18px;
+}
+
+#search-results {
+  margin-top: 20px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f0f0f0;
+  color: #333;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+td {
+  background-color: #fff;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tr:nth-child(odd) {
+  background-color: #fff;
+}
+
+tr:hover {
+  background-color: #ddd;
+}
+
+th:first-child {
+  border-left: none;
+}
+
+th:last-child {
+  border-right: none;
+}
+
+td:first-child {
+  border-left: none;
+}
+
+td:last-child {
+  border-right: none;
+}
+
+table thead tr {
+  border-bottom: 2px solid #333;
+}
+
+table tfoot tr {
+  border-top: 2px solid #333;
+}
+
+button {
+  background-color: gray;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+  margin: 10px;
+}
+
+button:hover {
+  background-color: darkgray;
+}
+
+button:active {
+  background-color: lightgray;
+}
+
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
