@@ -1,4 +1,5 @@
 
+var models = undefined;
 
 function createLink(model) {
    link = document.createElement('a');
@@ -47,10 +48,22 @@ function createRow(table, data) {
    return row;
 }
 
+function getRandomModel() {
+   if (models === undefined) {
+      window.alert('Models are not loaded yet');
+      return;
+   }
+   const randomIndex = Math.floor(Math.random() * models.length);
+   const model = models[randomIndex];
+   const link = `https://drive.google.com/drive/folders/${model.id}`;
+   window.open(link, '_blank');
+}
+
 // Load the JSON data
 fetch('models.json')
    .then(response => response.json())
    .then(data => {
+      models = data;
       // Get the search input and results container elements
       const searchInput = document.getElementById('search-input');
       const searchResults = document.getElementById('search-results');
