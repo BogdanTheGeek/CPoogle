@@ -1,6 +1,8 @@
 # CPoogle
 Google for Origami CPs.
 
+Try it here: https://bogdanthegeek.github.io/CPoogle/
+
 Uses google drive api and nltk to index, and clasify models.
 
 Serves the data as a static webpage and uses [Fuse.js](https://www.fusejs.io/) to fuzzy find models
