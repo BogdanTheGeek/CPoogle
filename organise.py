@@ -155,5 +155,6 @@ for id, model in models.items():
         model["tags"].extend(tags)
     db.append(model)
 
+print(f"Total models: {len(db)}")
 with open(args.output, "w") as output:
     json.dump(db, output, separators=(",", ": "))

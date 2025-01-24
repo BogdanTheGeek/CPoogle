@@ -13,6 +13,13 @@ function createLink(model) {
    return link;
 }
 
+function createThumbnail(id) {
+   href = `https://drive.google.com/thumbnail?id=${id}&sz=h200`;
+   img = document.createElement('img');
+   img.src = href;
+   return img
+}
+
 /*
 [
   {
@@ -56,15 +63,43 @@ function createRow(table, data) {
    // add name
    const nameCell = document.createElement('td');
    nameCell.appendChild(createLink(data));
+   row.appendChild(nameCell);
 
    // add author
    const authorCell = document.createElement('td');
    authorCell.appendChild(createLink(data.author));
-
-   row.appendChild(nameCell);
    row.appendChild(authorCell);
 
-   return row;
+   // Create a row for the previews
+   const previewsRow = document.createElement('tr');
+   previewsRow.id = data.id + "_previews";
+   previewsRow.style.display = 'none';
+   const previewsCell = document.createElement('td');
+   previewsCell.colSpan = 3;
+   previewsRow.appendChild(previewsCell);
+
+   // add expand button
+   const expandCell = document.createElement('td');
+   const expandButton = document.createElement('button');
+   expandButton.textContent = 'Expand';
+   expandButton.onclick = function() {
+      if (previewsCell.innerHTML === '') {
+         files = data.files.length > 0 ? data.files : [{ id: data.id }];
+         files.forEach(file => {
+            img = createThumbnail(file.id);
+            previewsCell.appendChild(img);
+         });
+         previewsRow.style.display = 'contents';
+      }
+      else {
+         // if hidden show, if shown hide
+         previewsRow.style.display = previewsRow.style.display !== 'contents' ? "contents" : "none";
+      }
+   };
+   expandCell.appendChild(expandButton);
+   row.appendChild(expandCell);
+
+   return row, previewsRow;
 }
 
 function getRandomModel() {
