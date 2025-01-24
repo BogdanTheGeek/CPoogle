@@ -7,8 +7,8 @@ import argparse as ap
 models = {}
 
 parser = ap.ArgumentParser()
-parser.add_argument("-i", "--input", help="Input file", default="out/files.json")
-parser.add_argument("-o", "--output", help="Output file", default="out/models.csv")
+parser.add_argument("-i", "--input", help="Input file", default="out/records.json")
+parser.add_argument("-o", "--output", help="Output file", default="docs/models.json")
 args = parser.parse_args()
 
 
@@ -38,40 +38,48 @@ def get_hypernyms(word, max_depth=5):
 {
   "1u7cptYSRtwyD0r886v1PaBMn4pxKPYc3": {
     "name": "David Llanque",
-    "files": [
+    "designs": [
       {
         "mimeType": "application/vnd.google-apps.folder",
         "id": "1w5f8w4y9IHZalFPftSaRTaRxtAEECMM0",
-        "name": "Horse 2"
+        "name": "Horse 2",
+        "files": [
+          {
+            "mimeType": "image/jpeg",
+            "id": "19m6lJKpl8h3afFs7M22Tf29sR19gI_YF",
+            "name": "6133008101_85df3599ed_o.jpg"
+          },
+          {
+            "mimeType": "image/png",
+            "id": "1ceSDWh8Zmy4ovQJu6CTKV4l8q70-878K",
+            "name": "6133023697_1d7204564b_o.png"
+          }
+        ]
       },
-      ...
    ]
   }
  }
  """
 
-with open(args.input, "r") as file:
-    for line in file:
+with open(args.input, "r") as design:
+    for line in design:
         obj = json.loads(line)
         author_id = tuple(obj.keys())[0]
         author = {
             "name": obj[author_id]["name"].strip(),
             "id": author_id,
         }
-        for file in obj[author_id]["files"]:
+        for design in obj[author_id]["designs"]:
             model = {
-                "name": file["name"].strip(),
-                "id": file["id"],
-                "type": file["mimeType"],
+                "name": design["name"].strip(),
+                "id": design["id"],
+                "type": design["mimeType"],
+                "files": design.get("files", []),
                 "author": author,
             }
-            models[file["id"]] = model
+            models[design["id"]] = model
 
-output = open(args.output, "w")
-if args.output.endswith(".csv"):
-    output.write("name,author,has_pd,link,tags\n")
-else:
-    db = []
+db = []
 
 for id, model in models.items():
     words = model["name"].replace("(", " ").replace(")", " ").split()
@@ -139,21 +147,13 @@ for id, model in models.items():
         if word[0] == "v" and word[1:].isnumeric():
             continue
 
-        if word.endswith(".pdf"):
+        if word.endswith(".pdf") or word.endswith(".jpg") or word.endswith(".png"):
             word = word[:-4]
 
         tags = [word]
         tags.extend(get_hypernyms(word))
         model["tags"].extend(tags)
-    link = f"https://drive.google.com/drive/folders/{id}"
-    if args.output.endswith(".csv"):
-        tags = " ".join(model["tags"])
-        output.write(
-            f"{model['name']},{model['author']['name']},{1 if model['has_pd'] else 0},{link},\"{tags}\"\n"
-        )
-    else:
-        db.append(model)
+    db.append(model)
 
-json.dump(db, output, separators=(",", ": "))
-
-output.close()
+with open(args.output, "w") as output:
+    json.dump(db, output, separators=(",", ": "))

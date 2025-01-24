@@ -5,6 +5,17 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import json
+from multiprocessing import Pool
+from tqdm import tqdm
+import argparse as ap
+
+
+parser = ap.ArgumentParser()
+parser.add_argument("-o", "--output", help="Output file", default="out/records.json")
+parser.add_argument(
+    "-j", "--jobs", type=int, help="Number of parallel jobs", default=None
+)
+options = parser.parse_args()
 
 
 # Authenticate and build the Google Drive service
@@ -64,7 +75,7 @@ def list_files_in_folder(drive_service, folder_id):
     results = (
         drive_service.files()
         .list(
-            q=query, fields="files(id, name, mimeType)", pageSize=1000
+            q=query, fields="files(id, name, mimeType)", pageSize=20
         )  # NOTE: please don't reach this limit
         .execute()
     )
@@ -72,27 +83,42 @@ def list_files_in_folder(drive_service, folder_id):
     return files
 
 
+def get_author_designs(args):
+    drive_service, author = args
+    designs = list_files_in_folder(drive_service, author["id"])
+    for design in designs:
+        if design["mimeType"] == "application/vnd.google-apps.folder":
+            design["files"] = list_files_in_folder(drive_service, design["id"])
+    obj = {
+        author["id"]: {
+            "name": author["name"],
+            "designs": designs,
+        },
+    }
+    return obj
+
+
 # Main function to scan a Google Drive folder
 def scan_google_drive(parent_folder_id):
     drive_service = authenticate_google_drive()
 
     # List folders at the first level
-    folders = list_folders_one_level(drive_service, parent_folder_id)
-    print(f"Found {len(folders)} subfolders in the parent folder:\n")
+    authors = list_folders_one_level(drive_service, parent_folder_id)
+    print(f"Found {len(authors)} subfolders in the parent folder:\n")
 
-    for folder in folders:
-        files = list_files_in_folder(drive_service, folder["id"])
-        obj = {
-            folder["id"]: {
-                "name": folder["name"],
-                "files": files,
-            }
-        }
-        with open("out/files.json", "a") as f:
-            entry = json.dumps(obj, separators=(",", ": "))
-            f.write(entry)
-            f.write("\n")
-            print(entry)
+    records = []
+    with tqdm(total=len(authors)) as bar:
+        with Pool(options.jobs) as pool:
+            args = [(drive_service, author) for author in authors]
+            # records = pool.starmap(get_author_designs, args)
+            for result in pool.imap_unordered(get_author_designs, args):
+                records.append(result)
+                bar.update()
+
+    # Write the records to a JSON file
+    with open(options.output, "w") as file:
+        for record in records:
+            file.write(json.dumps(record, separators=(",", ":")) + "\n")
 
 
 # Replace this with your shared Google Drive folder's ID

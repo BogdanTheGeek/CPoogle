@@ -14,9 +14,23 @@ function createLink(model) {
 }
 
 /*
-{
+[
+  {
     "name": "Chinchilla",
     "id": "1RmPYqU4lsvHVWXCU9UdxTCUoK8P-I-aj",
+    "type": "application/vnd.google-apps.folder",
+    "files": [
+      {
+        "mimeType": "image/jpeg",
+        "id": "10h3aIXEC1Snn64In6TKngQBIh3o37sle",
+        "name": "20608458740_b6c73a180a_b.jpg"
+      },
+      {
+        "mimeType": "image/jpeg",
+        "id": "1LsSsg6pzsvvK4pkdq7nl1MdwLohEDptE",
+        "name": "43930375164_398796ff45_b.jpg"
+      }
+    ],
     "author": {
       "name": "David Llanque",
       "id": "1u7cptYSRtwyD0r886v1PaBMn4pxKPYc3"
@@ -31,6 +45,7 @@ function createLink(model) {
     ],
     "has_pd": false
   }
+
 ]
 */
 function createRow(table, data) {
