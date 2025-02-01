@@ -1,4 +1,29 @@
+:root {
+  color-scheme: light dark;
+  --light-text: black;
+  --light-text-secondary: #333;
+  --light-button: gray;
+  --light-button-hover: darkgray;
+  --light-button-active: lightgray;
+  --light-button-disabled: #ccc;
+  --light-bg: white;
+  --light-bg-secondary: #f0f0f0;
+  --light-outline: #ccc;
+
+  --dark-text: white;
+  --dark-text-secondary: #ccc;
+  --dark-button: #ffffff;
+  --dark-button-hover: #d2d2d2;
+  --dark-button-active: #b3b3b3;
+  --dark-button-disabled: #666;
+  --dark-bg: #333;
+  --dark-bg-secondary: #444;
+  --dark-outline: #666;
+}
+
 body {
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
+  color: light-dark(var(--light-text), var(--dark-text));
   font-family: Arial, sans-serif;
 }
 
@@ -23,60 +48,36 @@ table {
 
 th, td {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid light-dark(var(--light-outline), var(--dark-outline));
   text-align: left;
 }
 
 th {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: light-dark(var(--light-bg-secondary), var(--dark-bg-secondary));
+  color: light-dark(var(--light-text), var(--dark-text));
   text-transform: uppercase;
   font-weight: bold;
 }
 
 td {
-  background-color: #fff;
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
 }
 
-tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-tr:nth-child(odd) {
-  background-color: #fff;
-}
-
-tr:hover {
-  background-color: #ddd;
-}
-
-th:first-child {
-  border-left: none;
-}
-
-th:last-child {
-  border-right: none;
-}
-
-td:first-child {
-  border-left: none;
-}
-
-td:last-child {
-  border-right: none;
+tr {
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
 }
 
 table thead tr {
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid light-dark(var(--light-text), var(--dark-text));;
 }
 
 table tfoot tr {
-  border-top: 2px solid #333;
+  border-top: 2px solid light-dark(var(--light-text-secondary), var(--dark-text-secondary));
 }
 
 button {
-  background-color: gray;
-  color: #fff;
+  background-color: light-dark(var(--light-button), var(--dark-button));
+  color: light-dark(var(--light-bg), var(--dark-bg));
   padding: 10px 20px;
   border: none;
   border-radius: 2px;
@@ -88,15 +89,15 @@ button {
 }
 
 button:hover {
-  background-color: darkgray;
+  background-color: light-dark(var(--light-button-hover), var(--dark-button-hover));
 }
 
 button:active {
-  background-color: lightgray;
+  background-color: light-dark(var(--light-button-active), var(--dark-button-active));
 }
 
 button:disabled {
-  background-color: #ccc;
+  background-color: light-dark(var(--light-button-disabled), var(--dark-button-disabled));
   color: #666;
   cursor: not-allowed;
 }
@@ -107,5 +108,10 @@ button:disabled {
   justify-content: center;
 }
 .counter {
-  color: #ccc;
+  color: light-dark(var(--light-text-secondary), var(--dark-text-secondary));
+}
+#color-scheme-container {
+  position: absolute;
+  top: 15px;
+  right: 15px;
 }
