@@ -53,46 +53,22 @@ th, td {
 }
 
 th {
-  background-color: light-dark(var(--light-bg), var(--dark-bg));
+  background-color: light-dark(var(--light-bg-secondary), var(--dark-bg-secondary));
   color: light-dark(var(--light-text), var(--dark-text));
   text-transform: uppercase;
   font-weight: bold;
 }
 
 td {
-  background-color: light-dark(var(--light-bg-secondary), var(--dark-bg-secondary));
-}
-
-tr:nth-child(even) {
-  background-color: light-dark(var(--light-bg-secondary), var(--dark-bg-secondary));
-}
-
-tr:nth-child(odd) {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
 }
 
-tr:hover {
-  background-color: #ddd;
-}
-
-th:first-child {
-  border-left: none;
-}
-
-th:last-child {
-  border-right: none;
-}
-
-td:first-child {
-  border-left: none;
-}
-
-td:last-child {
-  border-right: none;
+tr {
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
 }
 
 table thead tr {  
-  border-bottom: 1px solid light-dark(var(--light-outline), var(--dark-outline));;
+  border-bottom: 2px solid light-dark(var(--light-text), var(--dark-text));;
 }
 
 table tfoot tr {
