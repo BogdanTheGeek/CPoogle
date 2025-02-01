@@ -55,6 +55,20 @@ function createThumbnail(id) {
 
 ]
 */
+preffersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+colorSchemeToggle = document.getElementById("color-scheme-toggle");
+
+colorSchemeToggle.checked = preffersDark;
+colorSchemeToggle.addEventListener("click", function() {
+   const body = document.body;
+   
+   if (body.style.colorScheme === '') {
+      body.style.colorScheme = preffersDark ? 'light' : 'dark';
+   } else {
+      body.style.colorScheme = body.style.colorScheme === 'dark' ? 'light' : 'dark';
+   }
+});
+
 function createRow(table, data) {
    // Create a row for the name
    const row = document.createElement('tr');
