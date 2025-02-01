@@ -79,9 +79,23 @@ with open(args.input, "r") as design:
             }
             models[design["id"]] = model
 
+cachedb = {}
+try:
+    with open(args.output, "r") as output:
+        old_models = json.load(output)
+        cachedb = {model["id"]: model for model in old_models}
+
+except FileNotFoundError:
+    pass
+
 db = []
 
 for id, model in models.items():
+    # Skip if already in the cache
+    if id in cachedb:
+        db.append(cachedb[id])
+        continue
+
     words = model["name"].replace("(", " ").replace(")", " ").split()
     model["tags"] = []
     model["has_pd"] = False
@@ -153,8 +167,11 @@ for id, model in models.items():
         tags = [word]
         tags.extend(get_hypernyms(word))
         model["tags"].extend(tags)
+    # remove duplicates and sort
+    model["tags"] = sorted(list(set(model["tags"])))
     db.append(model)
 
 print(f"Total models: {len(db)}")
 with open(args.output, "w") as output:
-    json.dump(db, output, separators=(",", ": "))
+    # json.dump(db, output, separators=(",", ": "))
+    json.dump(db, output, separators=(",", ":"), indent=0, sort_keys=True)

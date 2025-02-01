@@ -72,13 +72,23 @@ def list_folders_one_level(drive_service, parent_folder_id):
 # List files in a specific folder
 def list_files_in_folder(drive_service, folder_id):
     query = f"'{folder_id}' in parents and trashed = false"
-    results = (
-        drive_service.files()
-        .list(
-            q=query, fields="files(id, name, mimeType)", pageSize=20
-        )  # NOTE: please don't reach this limit
-        .execute()
-    )
+    # try 3 times
+    for _ in range(3):
+        try:
+            results = (
+                drive_service.files()
+                .list(
+                    q=query, fields="files(id, name, mimeType)", pageSize=20
+                )  # NOTE: please don't reach this limit
+                .execute()
+            )
+            break
+        except Exception as e:
+            print(e)
+    else:
+        print(f"Failed to list files in folder {folder_id}")
+        return []
+
     files = results.get("files", [])
     return files
 
@@ -88,11 +98,13 @@ def get_author_designs(args):
     designs = list_files_in_folder(drive_service, author["id"])
     for design in designs:
         if design["mimeType"] == "application/vnd.google-apps.folder":
-            design["files"] = list_files_in_folder(drive_service, design["id"])
+            design["files"] = sorted(
+                list_files_in_folder(drive_service, design["id"]), key=lambda x: x["id"]
+            )
     obj = {
         author["id"]: {
             "name": author["name"],
-            "designs": designs,
+            "designs": sorted(designs, key=lambda x: x["id"]),
         },
     }
     return obj
@@ -114,6 +126,9 @@ def scan_google_drive(parent_folder_id):
             for result in pool.imap_unordered(get_author_designs, args):
                 records.append(result)
                 bar.update()
+
+    # Sort by key
+    records = sorted(records, key=lambda x: list(x.keys())[0])
 
     # Write the records to a JSON file
     with open(options.output, "w") as file:
