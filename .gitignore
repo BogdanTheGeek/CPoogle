@@ -1,6 +1,7 @@
 credentials.json
 token.pickle
 *.swo
+*.session
 *.swp
 .DS_Store
 venv/

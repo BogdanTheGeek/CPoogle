@@ -1,5 +1,14 @@
 
 var models = undefined;
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+const liveResults = document.getElementById('live-results');
+
+const defaultOptions = {
+   includeScore: true,
+   threshold: 0.3,
+   keys: ['name', 'tags', 'author.name']
+};
 
 function createLink(model) {
    link = document.createElement('a');
@@ -109,8 +118,26 @@ function getRandomModel() {
    }
    const randomIndex = Math.floor(Math.random() * models.length);
    const model = models[randomIndex];
-   const link = `https://drive.google.com/drive/folders/${model.id}`;
+   const link = createLink(model).href;
    window.open(link, '_blank');
+}
+
+function search(query, options) {
+   if (models === undefined) {
+      console.error("Models not loaded yet");
+   }
+
+   const fuse = new Fuse(models, options);
+   const result = fuse.search(query);
+
+   // Clear the search results container
+   const tbody = searchResults.querySelector('tbody');
+   tbody.innerHTML = '';
+
+   // Update the search results container
+   result.forEach(el => {
+      tbody.appendChild(createRow(tbody, el.item));
+   });
 }
 
 // Load the JSON data
@@ -118,10 +145,15 @@ fetch('models.json')
    .then(response => response.json())
    .then(data => {
       models = data;
-      // Get the search input and results container elements
-      const searchInput = document.getElementById('search-input');
-      const searchResults = document.getElementById('search-results');
-      const liveResults = document.getElementById('live-results');
+
+      // Check URL (Eg. ?q=chinchilla)
+      const url = new URL(window.location.href);
+      const searchParams = url.searchParams;
+      const urlQuery = searchParams.get('q');
+      if (urlQuery !== null) {
+         searchInput.value = urlQuery;
+         search(urlQuery, defaultOptions);
+      }
 
       // Add an event listener to the search input
       searchInput.addEventListener('keyup', (event) => {
@@ -130,26 +162,15 @@ fetch('models.json')
          }
          // Get the search query
          const query = searchInput.value.toLowerCase();
-         const options = {
-            includeScore: true,
-            threshold: 0.3,
-            keys: ['name', 'tags', 'author.name']
-         };
+         const options = defaultOptions;
 
-         // Filter the data based on the search query
-         const fuse = new Fuse(data, options);
+         search(query, options);
 
-         const result = fuse.search(query);
-
-         // Clear the search results container
-         const tbody = searchResults.querySelector('tbody');
-         tbody.innerHTML = '';
-
-         // Update the search results container
-         result.forEach(el => {
-            tbody.appendChild(createRow(tbody, el.item));
-         });
+         // Update the URL
+         url.searchParams.set('q', query);
+         window.history.pushState({}, '', url);
       });
+
    });
 
 /******************************** UI Code ************************************/
