@@ -32,7 +32,7 @@ body {
   height: 30px;
   padding: 10px;
   font-size: 18px;
-} 
+}
 
 #search-results {
   margin-top: 20px;
@@ -67,7 +67,7 @@ tr {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
 }
 
-table thead tr {  
+table thead tr {
   border-bottom: 2px solid light-dark(var(--light-text), var(--dark-text));;
 }
 
