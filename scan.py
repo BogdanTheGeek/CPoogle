@@ -78,7 +78,7 @@ def list_files_in_folder(drive_service, folder_id):
             results = (
                 drive_service.files()
                 .list(
-                    q=query, fields="files(id, name, mimeType)", pageSize=20
+                    q=query, fields="files(id, name, mimeType)", pageSize=300
                 )  # NOTE: please don't reach this limit
                 .execute()
             )
