@@ -175,20 +175,6 @@ fetch('models.json')
 
 /******************************** UI Code ************************************/
 
-endpoint = 'https://api.counterapi.dev/v1/bogdanthegeek/cpoogle'
-if (window.location.hostname !== 'localhost') {
-   endpoint += '/up';
-}
-
-fetch(endpoint)
-   .then(response => response.json())
-   .then(data => {
-      document.getElementById('counter').innerHTML = `Visits: ${data.count}`;
-   })
-   .catch(err => {
-      console.error(err);
-   });
-
 preffersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 colorSchemeToggle = document.getElementById("color-scheme-toggle");
 
