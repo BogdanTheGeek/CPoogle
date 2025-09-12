@@ -13,7 +13,7 @@ import argparse as ap
 parser = ap.ArgumentParser()
 parser.add_argument("-o", "--output", help="Output file", default="out/records.json")
 parser.add_argument(
-    "-j", "--jobs", type=int, help="Number of parallel jobs", default=None
+    "-j", "--jobs", type=int, help="Number of parallel jobs", default=30
 )
 options = parser.parse_args()
 
