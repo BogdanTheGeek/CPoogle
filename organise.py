@@ -8,6 +8,7 @@ models = {}
 
 parser = ap.ArgumentParser()
 parser.add_argument("-i", "--input", help="Input file", default="out/records.json")
+parser.add_argument("-s", "--spreadsheet", help="Spreadsheet data", default="out/spreadsheet.json")
 parser.add_argument("-o", "--output", help="Output file", default="docs/models.json")
 args = parser.parse_args()
 
@@ -61,6 +62,16 @@ def get_hypernyms(word, max_depth=5):
  }
  """
 
+# loads the spreadsheet data
+spreadsheet_data = {}
+try:
+    with open(args.spreadsheet, "r") as spreadsheet:
+        spreadsheet_data = json.load(spreadsheet)
+        
+except FileNotFoundError:
+    print(f"No spreadsheet file found at {args.spreadsheet}. Use -s to specify a path.")
+    pass
+
 with open(args.input, "r") as design:
     for line in design:
         obj = json.loads(line)
@@ -76,8 +87,16 @@ with open(args.input, "r") as design:
                 "type": design["mimeType"],
                 "files": design.get("files", []),
                 "author": author,
+                "design_style": "Unknown",
+                "paper_shape": "Unknown"
             }
             models[design["id"]] = model
+
+            # Add spreadsheet data if available
+            if design["id"] in spreadsheet_data:
+                spreadsheet_entry = spreadsheet_data[design["id"]]
+                model["design_style"] = spreadsheet_entry.get("design_style", "Unknown")
+                model["paper_shape"] = spreadsheet_entry.get("paper_shape", "Unknown")
 
 cachedb = {}
 try:

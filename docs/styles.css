@@ -25,6 +25,7 @@ body {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
   color: light-dark(var(--light-text), var(--dark-text));
   font-family: Arial, sans-serif;
+  overflow-y: scroll;
 }
 
 #search-input {
@@ -44,6 +45,8 @@ table {
   font-family: Arial, sans-serif;
   font-size: 16px;
   margin-bottom: 20px;
+  table-layout: fixed;
+  min-width: 600px;
 }
 
 th, td {
@@ -68,7 +71,7 @@ tr {
 }
 
 table thead tr {
-  border-bottom: 2px solid light-dark(var(--light-text), var(--dark-text));;
+  border-bottom: 2px solid light-dark(var(--light-text), var(--dark-text));
 }
 
 table tfoot tr {
@@ -88,12 +91,13 @@ button {
   margin: 10px;
 }
 
-button:hover {
-  background-color: light-dark(var(--light-button-hover), var(--dark-button-hover));
-}
+.expand-button {
 
-button:active {
-  background-color: light-dark(var(--light-button-active), var(--dark-button-active));
+  margin: auto;
+  display: block;
+  text-align: center;
+  padding: 8px 18px;
+  min-width: fit-content;
 }
 
 button:disabled {
@@ -101,17 +105,144 @@ button:disabled {
   color: #666;
   cursor: not-allowed;
 }
+
 .app {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
+
 .counter {
   color: light-dark(var(--light-text-secondary), var(--dark-text-secondary));
 }
+
 #color-scheme-container {
   position: absolute;
   top: 15px;
   right: 15px;
+}
+
+.filter-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: none;
+  width: 1.25em;
+  margin: 0 0 0 10px;
+  height: 1.25em;
+  align-self: center;
+}
+
+.filter-icon {
+  width: 1em;
+  height: 1em;
+  fill: light-dark(var(--light-text), var(--dark-text));
+  background-color: none;
+}
+
+.filter-button-active {
+  background-color: light-dark(var(--light-button), var(--dark-button));
+}
+
+.filter-icon-active {
+  fill: light-dark(var(--light-bg-secondary), var(--dark-bg-secondary));
+}
+
+.filter-hover {
+  display: flex;
+  position: relative;
+  width: fit-content;
+  margin: 0 0 0 auto;
+  height: fit-content;
+  align-self: center;
+}
+
+.filter-dropdown {
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  display: none;
+  position: absolute;
+  width: max-content;
+}
+
+.filter-dropdown-active {
+  display: block;
+
+}
+
+.filter-spacer {
+  min-height: 3px;
+}
+
+.filter-dropdown-text-container {
+  padding: 0;
+  background-color: light-dark(var(--light-bg-secondary), var(--dark-bg-secondary));
+  border: 1px solid light-dark(var(--light-outline), var(--dark-outline));
+  border-radius: 0.2em;
+  list-style-type: none;
+  margin-top: 3px;
+  margin: 0 0 0 auto;
+
+}
+
+.filter-container {
+  display: flex;
+
+}
+
+#details-column {
+
+  width: 100px;
+}
+
+.filter-dropdown-individual-text-container {
+  margin: 0;
+  text-transform: none;
+  font-weight: normal;
+  padding: 0.5em;
+  padding-right: 1em;
+  border-radius: 0.2em;
+  display: flex;
+}
+
+.filter-checkbox {
+  width: 1.5em;
+  padding-right: 0.3em;
+  fill: light-dark(var(--light-text), var(--dark-text));
+}
+
+.filter-dropdown-individual-text {
+  margin: 0;
+  display: flex;
+  align-self: center;
+}
+
+/* Applies only to devices that support hover events (no phones, etc)*/
+@media (hover: hover) {
+  .filter-dropdown-individual-text-container:hover {
+    background-color: light-dark(var(--light-bg), var(--dark-bg))
+  }
+
+  .filter-hover:hover .filter-button {
+    background-color: light-dark(var(--light-button), var(--dark-button));
+  }
+
+  .filter-hover:hover .filter-icon {
+    fill: light-dark(var(--light-bg-secondary), var(--dark-bg-secondary));
+  }
+
+  button:hover {
+    background-color: light-dark(var(--light-button-hover), var(--dark-button-hover));
+  }
+
+  button:active {
+    background-color: light-dark(var(--light-button-active), var(--dark-button-active));
+  }
+
+  .filter-hover:hover .filter-dropdown {
+    display: block;
+  }
 }

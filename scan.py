@@ -20,7 +20,7 @@ options = parser.parse_args()
 
 # Authenticate and build the Google Drive service
 def authenticate_google_drive():
-    SCOPES = ["https://www.googleapis.com/auth/drive"]
+    SCOPES = ["https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/spreadsheets.readonly"]
 
     creds = None
     # Use a saved token if it exists
