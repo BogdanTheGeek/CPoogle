@@ -72,6 +72,9 @@ except FileNotFoundError:
     print(f"No spreadsheet file found at {args.spreadsheet}. Use -s to specify a path.")
     pass
 
+def formatSpreadsheetData(key, spreadsheet_entry):
+    return (list(map(lambda entry: entry.strip(),spreadsheet_entry.get(key, "Unknown").split(","))))
+
 with open(args.input, "r") as design:
     for line in design:
         obj = json.loads(line)
@@ -87,16 +90,16 @@ with open(args.input, "r") as design:
                 "type": design["mimeType"],
                 "files": design.get("files", []),
                 "author": author,
-                "design_style": "Unknown",
-                "paper_shape": "Unknown"
+                "design_style": ["Unknown"],
+                "paper_shape": ["Unknown"]
             }
             models[design["id"]] = model
 
             # Add spreadsheet data if available
             if design["id"] in spreadsheet_data:
                 spreadsheet_entry = spreadsheet_data[design["id"]]
-                model["design_style"] = spreadsheet_entry.get("design_style", "Unknown")
-                model["paper_shape"] = spreadsheet_entry.get("paper_shape", "Unknown")
+                model["design_style"] = formatSpreadsheetData("design_style", spreadsheet_entry)
+                model["paper_shape"] = formatSpreadsheetData("paper_shape", spreadsheet_entry)
 
 cachedb = {}
 try:

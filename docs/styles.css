@@ -202,15 +202,14 @@ button:disabled {
   margin: 0;
   text-transform: none;
   font-weight: normal;
-  padding: 0.5em;
-  padding-right: 1em;
+  padding: 0.4em;
   border-radius: 0.2em;
   display: flex;
 }
 
 .filter-checkbox {
-  width: 1.5em;
-  padding-right: 0.3em;
+  width: 1em;
+  margin: 0 0.4em 0 0;
   fill: light-dark(var(--light-text), var(--dark-text));
 }
 
@@ -218,6 +217,10 @@ button:disabled {
   margin: 0;
   display: flex;
   align-self: center;
+}
+
+.filter-hide {
+  display: none;
 }
 
 /* Applies only to devices that support hover events (no phones, etc)*/

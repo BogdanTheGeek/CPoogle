@@ -4,19 +4,19 @@ const searchInput = document.getElementById('search-input');
 const searchResults = document.getElementById('search-results');
 const liveResults = document.getElementById('live-results');
 const encoder = new TextEncoder();
-const filters = {}
-var openFilter = "" //keeps track of which, if any, filter is open
+const filters = {};
+//keeps track of which, if any, filter is open
+var openFilter = ""; 
 //the filters the website will use
 const filtersToUse = ["design_style", "paper_shape"];
-
-//Our svg paths, since we will be switching these out dynamically
-const emptyCheckboxPath = "M480 144C488.8 144 496 151.2 496 160L496 480C496 488.8 488.8 496 480 496L160 496C151.2 496 144 488.8 144 480L144 160C144 151.2 151.2 144 160 144L480 144zM160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160C544 124.7 515.3 96 480 96L160 96z"
-const checkedCheckboxPath = "M480 96C515.3 96 544 124.7 544 160L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 160C96 124.7 124.7 96 160 96L480 96zM160 144C151.2 144 144 151.2 144 160L144 480C144 488.8 151.2 496 160 496L480 496C488.8 496 496 488.8 496 480L496 160C496 151.2 488.8 144 480 144L160 144zM390.7 233.9C398.5 223.2 413.5 220.8 424.2 228.6C434.9 236.4 437.3 251.4 429.5 262.1L307.4 430.1C303.3 435.8 296.9 439.4 289.9 439.9C282.9 440.4 276 437.9 271.1 433L215.2 377.1C205.8 367.7 205.8 352.5 215.2 343.2C224.6 333.9 239.8 333.8 249.1 343.2L285.1 379.2L390.7 234z"
+const currentResultsFilters = {};
+filtersToUse.forEach((filter) => currentResultsFilters[filter] = []);
 
 const defaultOptions = {
    includeScore: true,
    threshold: 0.3,
-   keys: ['name', 'tags', 'author.name'].concat(filtersToUse)
+   keys: ['name', 'tags', 'author.name'].concat(filtersToUse),
+   useExtendedSearch: true
 };
 
 function createLink(model) {
@@ -33,7 +33,7 @@ function createLink(model) {
 
 function createText(textContent) {
    text = document.createElement('p');
-   text.textContent = textContent;
+   text.textContent = textContent.join(", ");
    return text;
 }
 
@@ -49,8 +49,8 @@ function createThumbnail(id) {
   {
     "name": "Chinchilla",
     "id": "1RmPYqU4lsvHVWXCU9UdxTCUoK8P-I-aj",
-    "design_style":"22.5\u00b0",
-    "paper_shape":"Square",
+    "design_style":["22.5\u00b0"],
+    "paper_shape":["Square"],
     "type": "application/vnd.google-apps.folder",
     "files": [
       {
@@ -151,7 +151,7 @@ function search(query, options, filtersToApply) {
       console.error("Models not loaded yet");
    }
 
-   var newSearch = { $or: [{ name: query }, { tags: query }, { "author.name": query }] };
+   let newSearch = { $or: [{ name: query }, { tags: query }, { "author.name": query }] };
 
    if (filtersToApply != null) {
       if (query === "") { //no search query, but you can query by a filter, for example, to look at all the tilted grid models, for example
@@ -164,18 +164,87 @@ function search(query, options, filtersToApply) {
             ]
          };
       }
-   };
-   const fuse = new Fuse(models, options);
-   const result = fuse.search(newSearch);
+   } 
 
+   let results;
+   let emptySearch;
+
+   if (query === "" && filtersToApply === null) { //If there are no filters or a search, we use the full model list to produce filter numbers but don't show any results
+      results = models;
+      emptySearch = true;
+   } else {
+      const fuse = new Fuse(models, options);
+      results = fuse.search(newSearch);
+      emptySearch = false;
+   };
+
+   //Count how many of each category are in the search results
+
+   Object.keys(currentResultsFilters).forEach(filterType=>currentResultsFilters[filterType] = []);
+   results.forEach(result => {
+      filtersToUse.forEach(filterType => {
+         const filterNames = emptySearch ? result[filterType] : result.item[filterType];
+
+         filterNames.forEach(filterName=> {
+            const matchingIndex = currentResultsFilters[filterType].findIndex((item) => item[0] === filterName);
+            if (matchingIndex === -1){
+               currentResultsFilters[filterType].push([filterName, 1]);
+            } else {
+               currentResultsFilters[filterType][matchingIndex][1] += 1;
+            }
+         })
+      })
+   })
+
+   //Sort by amount of results per filter (smallest first)
+   Object.keys(currentResultsFilters).forEach(filterType=>currentResultsFilters[filterType] = currentResultsFilters[filterType].sort((a, b) => a[1] - b[1]));
+
+   Object.keys(currentResultsFilters).forEach(filterType => {
+      //Hide filters with no results associated 
+      //Show amount of results per filter if the filter has results and isn't active
+
+      const filterDropdownContainer = document.getElementById(`filter-dropdown-text-container-${filterType}`);
+      for (individualFilter of filterDropdownContainer.children){
+         const filterName = individualFilter.getAttribute("data-filter-name");
+         const matchingIndex = currentResultsFilters[filterType].findIndex((item) => item[0] === filterName);
+         if (matchingIndex === -1){
+            individualFilter.classList.add("filter-hide");
+         } else {
+            individualFilter.classList.remove("filter-hide");
+            if (filters[filterType][filterName] === true) {
+               individualFilter.querySelector("p").textContent = filterName;
+            } else {
+               individualFilter.querySelector("p").textContent = `${filterName} (${currentResultsFilters[filterType][matchingIndex][1]})`;
+            }
+         }
+      }
+
+      //Reorder filters
+      //The checked filters will be in the order they were checked
+      //The unchecked filters will be sorted in most to least results
+
+      const checkedElements = filterDropdownContainer.querySelectorAll("li:has(> input:not(:checked)");
+      let previousElement = checkedElements[checkedElements.length - 1];
+
+      for (let i=0; i<currentResultsFilters[filterType].length; i++){
+         if (filters[filterType][currentResultsFilters[filterType][i][0]] === false){ //unchecked
+            const currentElement = filterDropdownContainer.querySelector(`li[data-filter-name="${currentResultsFilters[filterType][i][0]}"]`);
+            filterDropdownContainer.insertBefore(currentElement, previousElement);
+            previousElement = currentElement;
+         }
+      }
+   })
+   
    // Clear the search results container
    const tbody = searchResults.querySelector('tbody');
    tbody.innerHTML = '';
 
-   // Update the search results container
-   result.forEach(el => {
-      tbody.appendChild(createRow(tbody, el.item));
-   });
+   if (!emptySearch){
+      // Update the search results container
+      results.forEach(el => {
+         tbody.appendChild(createRow(tbody, el.item));
+      });
+   }
 }
 
 function constructSearch(query = searchInput.value.toLowerCase()) {
@@ -194,7 +263,7 @@ function constructSearch(query = searchInput.value.toLowerCase()) {
          } else {
             url.searchParams.set(key, encodeURI(filterValue[0]));
          }
-         return ({ $path: key, $val: filterValue[0] });
+         return ({ $path: key, $val: `="${filterValue[0]}"` }); //exact match the filters
       });
       //deletes the parameter if we didn't assign anything
       if (url.searchParams.get(key) === "") {
@@ -233,17 +302,16 @@ function constructSearch(query = searchInput.value.toLowerCase()) {
 }
 
 function switchCheckbox(element) {
-   checkboxElement = element.querySelector("svg").querySelector("path");
+   const checkboxElement = element.querySelector("input");
+   const filterType = element.getAttribute("data-filter-type");
+   const filterName = element.getAttribute("data-filter-name");
 
-   filterType = element.getAttribute("data-filter-type");
-   filterName = element.getAttribute("data-filter-name");
-
-   if (checkboxElement.getAttribute("d") === emptyCheckboxPath) { //checks checkbox
-      checkboxElement.setAttribute("d", checkedCheckboxPath);
+   if (checkboxElement.checked === false) { //checks checkbox
+      checkboxElement.checked = true;
       filters[filterType][filterName] = true;
 
       //Toggles the filter button & icon to active if it isn't already
-      filterButton = document.getElementById(filterType + "-button");
+      const filterButton = document.getElementById(filterType + "-button");
 
       if (filterButton.classList.contains("filter-button-active") === false) {
          document.getElementById(filterType + "-icon").classList.add("filter-icon-active");
@@ -251,7 +319,7 @@ function switchCheckbox(element) {
       }
 
    } else { //unchecks checkbox
-      checkboxElement.setAttribute("d", emptyCheckboxPath);
+      checkboxElement.checked = false;
       filters[filterType][filterName] = false;
 
       //toggles off the filter button if no filters are active and the menu is closed
@@ -300,7 +368,7 @@ function createFilters(data, key) {
       <div class="filter-container">
             ${keyWithSpaces}
          <div class="filter-hover">
-         <button class="filter-button" id="${key}-button" title="Filter by ${keyWithSpaces}" data-filter-type="${key}">
+         <button class="filter-button" id="${key}-button" title="Filter by ${keyWithSpaces}">
             <svg class="filter-icon" id="${key}-icon" xmlns="http://www.w3.org/2000/svg"
                viewBox="0 0 640 640"><!--!Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
                <path
@@ -337,18 +405,13 @@ function createFilters(data, key) {
       }
    })
 
-   // return all unique values for a given key in the data, values for each key are comma seperated
-   uniqueValues = {};
+   //find all unique values for a key
+   let filterValues = [];
    data.forEach(item => {
       if (item[key] !== undefined) {
-         item[key] = String(item[key]);
-         const values = item[key].split(',').map(v => v.trim());
-         values.forEach(value => {
-            if (value in uniqueValues) {
-               uniqueValues[value] += 1;
-            }
-            else {
-               uniqueValues[value] = 1;
+         item[key].forEach(value => {
+            if (filterValues.includes(value) === false) {
+               filterValues.push(value);
             }
          });
       } else {
@@ -356,30 +419,14 @@ function createFilters(data, key) {
       }
    });
 
-   //sort by how often they appear, so most useful filters are first
-   var filterValues = Object.entries(uniqueValues).sort((a, b) => b[1] - a[1]).map(entry => entry[0]);
-
-   filterDropdownContainer = document.getElementById(`filter-dropdown-text-container-${key}`)
-
-   // Creates a checkbox
-
-   const svgns = "http://www.w3.org/2000/svg";
-   const svgTemplate = document.createElementNS(svgns, "svg");
-   svgTemplate.classList.add("filter-checkbox");
-   svgTemplate.setAttribute("xmlns", svgns);
-   svgTemplate.setAttribute("viewBox", "0 0 640 640");
-   //Attribution
-   const comment = document.createComment("Font Awesome Free v7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.");
-   svgTemplate.appendChild(comment);
-   const svgPath = document.createElementNS(svgns, "path");
-   svgTemplate.appendChild(svgPath);
+   const filterDropdownContainer = document.getElementById(`filter-dropdown-text-container-${key}`);
 
    //checks if any filters are active via url parameters
    filters[key] = {};
    const url = new URL(window.location.href);
    const searchParams = url.searchParams;
    const urlQuery = searchParams.get(key);
-   var urlQueryValues = [];
+   let urlQueryValues = [];
    if (urlQuery !== null) {
       urlQueryValues = decodeURI(urlQuery).split(",");
       //make the filter button light up if there are filters active
@@ -388,29 +435,18 @@ function createFilters(data, key) {
    }
 
    filterValues.forEach(filterValue => {
-      const newFilterContainer = document.createElement("li");
-      const newFilterText = document.createElement("p");
-      const checkbox = svgTemplate.cloneNode(true);
-      newFilterContainer.classList.add("filter-dropdown-individual-text-container");
-      newFilterText.classList.add("filter-dropdown-individual-text")
+      filters[key][filterValue] = urlQueryValues.includes(filterValue);
 
-      newFilterText.textContent = filterValue;
+      const filterHtml = `
+      <li class="filter-dropdown-individual-text-container" onclick="switchCheckbox(this)" data-filter-name="${filterValue}" data-filter-type="${key}">
+         <input class="filter-checkbox" type="checkbox" ${filters[key][filterValue] && "checked"} onclick="switchCheckbox(this.parentElement)">
+         <p class="filter-dropdown-individual-text" data-filter-name="${filterValue}">
+            ${filterValue}
+         </p>
+      </li>
+      `;
 
-      newFilterContainer.setAttribute('onclick', 'switchCheckbox(this)');
-      newFilterContainer.setAttribute("data-filter-name", filterValue);
-      newFilterContainer.setAttribute("data-filter-type", key);
-
-      if (urlQueryValues.includes(filterValue)) {
-         checkbox.querySelector("path").setAttribute("d", checkedCheckboxPath);
-         filters[key][filterValue] = true;
-      } else {
-         checkbox.querySelector("path").setAttribute("d", emptyCheckboxPath);
-         filters[key][filterValue] = false;
-      }
-
-      newFilterContainer.appendChild(checkbox);
-      newFilterContainer.appendChild(newFilterText);
-      filterDropdownContainer.appendChild(newFilterContainer)
+      filterDropdownContainer.insertAdjacentHTML("beforeend", filterHtml);
    })
 
 }
@@ -422,7 +458,7 @@ fetch('models.json')
    .then(data => {
       models = data;
 
-      filtersToUse.forEach((filterType)=>{
+      filtersToUse.forEach((filterType) => {
          createFilters(data, filterType);
       });
 
@@ -434,6 +470,8 @@ fetch('models.json')
       if (urlQuery !== null) {
          searchInput.value = urlQuery;
          constructSearch(urlQuery);
+      } else {
+         constructSearch("");
       }
 
       // Add an event listener to the search input
